@@ -9,25 +9,25 @@ from datetime import datetime, timedelta
 number_of_hours = 24
 
 # Splunk server information 
-splunk_host = '10.1.4.58'
+splunk_host = 'splunk_IP_Address'
 splunk_port = '8089'
-splunk_user = 'admin'
-splunk_password = 'memorizeM3'
+splunk_user = 'splunk_user_name'
+splunk_password = 'splunk_user_password'
 
 # Scrutinizer Server Information 
 
 db_name = 'plixer'
 scrutinizer_user = 'scrutremote'
-scrutinizer_password = 'admin'
-scrutinizer_host = '10.30.16.26'
+scrutinizer_password = 'scrutinizer_Admin_Password'
+scrutinizer_host = 'scrutinizer_IP_Address'
 
 # set up DB connector 
 
 scrut_inserter = Add_users(db_name,scrutinizer_user,scrutinizer_password,scrutinizer_host)
 
 
-# splunk query 
-searchquery_oneshot = "search 10.1.4.104 | dedup host "
+# splunk query - you will need to build this witht he end user, it's going to vary depending on what they have for indexes / etc. You want to get the UserName and the IP back do you can parse it below. 
+searchquery_oneshot = "search use a search that returnes users and ips | dedup host "
 
 
 
@@ -54,11 +54,11 @@ oneshotsearch_results = service.jobs.oneshot(searchquery_oneshot, **kwargs_onesh
 # manipulate results here. 
 reader = results.ResultsReader(oneshotsearch_results)
 
-# ip, user_name, domain, data_source are the params the inserter takes. 
+#this will convert the splunk results to a dictionary. You will likely want to look at what comes back so you can pass the correct info into the inserter. 
 for item in reader:
     item = dict(item)
-    scrut_inserter.insert_users(item['host'],'briantestnew','plxr','splunk')
+    scrut_inserter.insert_users('IP Address Goes here','User Name Here','Domain','splunk')
 
 
-
+##closes the connection
 scrut_inserter.close_connection()
