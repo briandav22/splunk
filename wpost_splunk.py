@@ -2,21 +2,33 @@ import splunklib.client as client
 import splunklib.results as results
 import sys
 import json
-
+from username_inserter import Add_users
 from datetime import datetime, timedelta
 
 # time range we want to use for the search (last 24 hours by default)
 number_of_hours = 24
 
-# server information 
-host = '10.1.4.58'
-port = '8089'
-username = 'admin'
-password = 'somepass'
+# Splunk server information 
+splunk_host = '10.1.4.58'
+splunk_port = '8089'
+splunk_user = 'admin'
+splunk_password = 'memorizeM3'
+
+# Scrutinizer Server Information 
+
+db_name = 'plixer'
+scrutinizer_user = 'scrutremote'
+scrutinizer_password = 'admin'
+scrutinizer_host = '10.30.16.26'
+
+# set up DB connector 
+
+scrut_inserter = Add_users(db_name,scrutinizer_user,scrutinizer_password,scrutinizer_host)
+
 
 # splunk query 
+searchquery_oneshot = "search 10.1.4.104 | dedup host "
 
-searchquery_oneshot = "search 10.1.5.1"
 
 
 
@@ -26,7 +38,7 @@ earliest_time = str((datetime.utcnow() - timedelta(hours = number_of_hours)).str
 
 # creates connection to Splunk 
 
-service = client.connect(host=host,port=port, username=username,  password=password)
+service = client.connect(host=splunk_host,port=splunk_port, username=splunk_user,  password=splunk_password)
 
 
 # time frame arguments 
@@ -42,7 +54,11 @@ oneshotsearch_results = service.jobs.oneshot(searchquery_oneshot, **kwargs_onesh
 # manipulate results here. 
 reader = results.ResultsReader(oneshotsearch_results)
 
+# ip, user_name, domain, data_source are the params the inserter takes. 
 for item in reader:
     item = dict(item)
-    print(item['_raw'])
-    print('host ='+ item['host'] +'|' ' source=' + item['source'])
+    scrut_inserter.insert_users(item['host'],'briantestnew','plxr','splunk')
+
+
+
+scrut_inserter.close_connection()
